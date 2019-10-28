@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Created on August 31, 2019
-Version 2.0 
+Created on August 9, 2019
+Version 1.0 
 
 Copyright (c) 2019 Thomas Beha
 
@@ -23,13 +23,12 @@ from lxml import etree
 import time
 from SimpliVityClass import *
 from datetime import datetime
-from prometheus_client import Counter, Gauge, start_http_server
+from prometheus_client import Gauge, Counter, start_http_server
 
 BtoGB=pow(1024,3)
 BtoMB=pow(1024,2)
-path = './'
-#path = '/opt/svt/'
- 
+path = '/opt/svt/'
+#path = './'
 
 node_state={
         'UNKOWN': 0,
@@ -150,11 +149,11 @@ def getNodeCapacity(data):
 if __name__ == "__main__":
 
         t0=time.time()
-        """ read the key and input file """
-        keyfile= path + 'SvtConnector.key'
-        xmlfile=path + 'SvtConnector.xml'
+        keyfile= path + 'SvtPromConnector.key'
+        xmlfile=path + 'SvtPromConnector.xml'
 
         """ Parse XML File """
+
         tree = etree.parse(xmlfile)
         u2=(tree.find("user")).text
         p2=(tree.find("password")).text
@@ -184,87 +183,58 @@ if __name__ == "__main__":
         logwriter(log,"Open Connection to SimpliVity")
         svt.connect(svtuser,svtpassword)
         logwriter(log,"Connection to SimpliVity is open")
-        logclose(log)
-        
-        start_http_server(port)
+        logclose(log) 
+
+        pGauge={}
         c = Counter('simplivity_sample','SimpliVity sample number')
-        scluster = Gauge('simplivity_cluster','SimpliVity Cluster Data',['clustername','clustermetric'])
-        snode = Gauge('simplivity_node','SimpliVity Node Data',['nodename','nodemetric'])
-        svm = Gauge('simplivity_vm','SimpliVity VM Data',['vmname','vmmetric'])
-        sdatastore = Gauge('simplivity_datastore','SimpliVity Datastore Data - Sizes in GB',['dsname','dsmetric'])
         delta = Gauge('ConnectorRuntime','Time required for last data collection in seconds')
+        start_http_server(port)
+        """
+        Create the pGauge metric as far as possible at this state.
+        Additional pGauge metrics will be created if needed by the exception handler. 
+        """
+        for x in svt.GetCluster()['omnistack_clusters']:
+                cn = (x['name'].split('.')[0]).replace('-','_')
+                pGauge[cn]=Gauge(cn,'SimpliVity Cluster Data',['clustermetric'])   
+        for x in svt.GetHost()['hosts']:
+            cn = (x['name'].split('.')[0]).replace('-','_')
+            pGauge[cn]=Gauge(cn,'Host metrics',['hostmetric'])
 
         """
         Start an endless loop to capture the current status every TIME_RANGE
         Errors will be catched with an error routine
         Please note that the connection must be refreshed after 24h or afte 10 minutes inactivity.
-        """
-
-        while True:                
+        """  
+        while True:
                 try:
-                        t0 = time.time()         
-                        c.inc()
-                        clusters = svt.GetCluster()['omnistack_clusters']
-                        hosts = svt.GetHost()['hosts']
-                        vms = svt.GetVM()['virtual_machines']
-                        datastores = svt.GetDataStore()['datastores']
-                        scluster.labels('Federation','Cluster_count').set(len(clusters))
-                        snode.labels('Federation','Node_count').set(len(hosts))
-                        svm.labels('Federation','VM_count').set(len(vms))
-                        sdatastore.labels('Federation','Datastore_count').set(len(datastores))
-                        """  Cluster metrics: """
-                        for x in clusters:        
+                        t1 = time.time()
+                        dt = t1 - t0
+                        t0 = t1
+                        delta.set(dt)          
+                        c.inc() 
+                        for x in svt.GetCluster()['omnistack_clusters']:        
                                 perf=getPerformanceAverage(svt.GetClusterMetric(x['name'],timerange=mrange,resolution=mresolution)['metrics'])
                                 cn = (x['name'].split('.')[0]).replace('-','_')
                                 for metricname in capacitymetric:
-                                    scluster.labels(cn,metricname).set(x[metricname]/BtoGB)
+                                    pGauge[cn].labels(metricname).set(x[metricname]/BtoGB)
                                 for metricname in dedupmetric:
-                                    scluster.labels(cn,metricname).set(x[metricname].split()[0])
+                                    pGauge[cn].labels(metricname).set(x[metricname].split()[0])
                                 for metricname in performancemetric:
-                                    scluster.labels(cn,metricname).set(perf[metricname])
-                        """  Node metrics: """
-                        for x in hosts:
+                                    pGauge[cn].labels(metricname).set(perf[metricname])
+                        for x in svt.GetHost()['hosts']:
                             y = getNodeCapacity(svt.GetHostCapacity(x['name'],timerange=mrange,resolution=mresolution)['metrics'])
                             perf=getPerformanceAverage(svt.GetHostMetrics(x['name'],timerange=mrange,resolution=mresolution)['metrics'])
                             cn = (x['name'].split('.')[0]).replace('-','_')
-                            snode.labels(cn,'State').set(node_state[x['state']])
+                            pGauge[cn].labels('state').set(node_state[x['state']])
                             for metricname in capacitymetric:
-                                snode.labels(cn,metricname).set(y[metricname])
+                                pGauge[cn].labels(metricname).set(y[metricname])
                             for metricname in dedupmetric:
-                                snode.labels(cn,metricname).set(y[metricname])
+                                pGauge[cn].labels(metricname).set(y[metricname])
                             for metricname in performancemetric:
-                                snode.labels(cn,metricname).set(perf[metricname])
-                        """  VM metrics: """
-                        for x in vms:
-                            cn = (x['name'].split('.')[0]).replace('-','_')
-                            if ( x['host_id'] != None):  # true if VM is on a SimpliVity node
-                                svm.labels(cn,'state').set(vm_state[x['state']])                            
-                                perf=getPerformanceAverage(svt.GetVMMetric(x['name'],timerange=mrange,resolution=mresolution)['metrics'])
-                                for metricname in performancemetric:
-                                    svm.labels(cn,metricname).set(perf[metricname])
-                            else:  # VM is on a compute node
-                                svm.labels(cn,'state').set(vm_state[x['state']])
-                                perf=getPerformanceAverage(svt.GetVMMetric(x['name'],timerange=mrange,resolution=mresolution)['metrics'])
-                                for metricname in performancemetric:
-                                    svm.labels(cn,metricname).set(perf[metricname])
-                        
-                        """ DataStore metrics """
-                        for x in datastores:
-                                cn = (x['name']).replace('-','_')
-                                sdatastore.labels(cn,'size').set(x['size']/BtoGB)
-                        
-                        t1 = time.time()
-                        delta.set((t1-t0))
-                        while ((t1-t0) < mintervall):
-                                time.sleep(1.0)
-                                t1 = time.time()  
+                                pGauge[cn].labels(metricname).set(perf[metricname])
+                        time.sleep(mintervall)
                 except KeyError:
-                        log=logopen(path+lfile)
-                        logwriter(log,"KeyError")
-                        logwriter(log,str(e.expression))
-                        logwriter(log,str(e.status))
-                        logwriter(log,str(e.message))
-                        logclose(log)                         
+                        pGauge[cn]= Gauge(cn,'') 
                 except SvtError as e:
                         if e.status == 401:
                                 try:
@@ -279,7 +249,7 @@ if __name__ == "__main__":
                                         logwriter(log,str(e.expression))
                                         logwriter(log,str(e.status))
                                         logwriter(log,str(e.message))
-                                        logwriter(log,"close SimpliVity connection")
+                                        logwriter(log,"close Database connection")
                                         logclose(log)
                                         exit(-200)
                         else:
@@ -288,6 +258,6 @@ if __name__ == "__main__":
                                 logwriter(log,str(e.expression))
                                 logwriter(log,str(e.status))
                                 logwriter(log,str(e.message))
-                                logwriter(log,"close SimpliVity connection")
+                                logwriter(log,"close Database connection")
                                 logclose(log)
                                 exit(-200)        
