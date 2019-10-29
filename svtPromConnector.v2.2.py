@@ -21,7 +21,7 @@ Copyright (c) 2019 Thomas Beha
 from cryptography.fernet import *
 from lxml import etree 
 import time
-from SimpliVityClass2 import *
+from SimpliVityClass import *
 from datetime import datetime
 from prometheus_client import Counter, Gauge, start_http_server
 
