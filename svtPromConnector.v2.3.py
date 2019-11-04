@@ -27,8 +27,8 @@ from prometheus_client import Counter, Gauge, start_http_server
 
 BtoGB=pow(1024,3)
 BtoMB=pow(1024,2)
-path = './'
-#path = '/opt/svt/'
+#path = './'
+path = '/opt/svt/'
  
 
 node_state={
@@ -261,10 +261,6 @@ if __name__ == "__main__":
                 perf=getPerformanceAverage(svt.GetVMMetric(x['name'],timerange=mrange,resolution=mresolution)['metrics'])
                 for metricname in performancemetric:
                     svm.labels(cn,metricname).set(perf[metricname])                            
-                """
-                if ( x['host_id'] != None):  # true if VM is on a SimpliVity node
-                else:  # VM is on a compute node
-                """
 
             """ DataStore metrics """
             for x in datastores:
