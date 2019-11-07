@@ -27,8 +27,8 @@ from prometheus_client import Counter, Gauge, start_http_server
 
 BtoGB=pow(1024,3)
 BtoMB=pow(1024,2)
-#path = './'
-path = '/opt/svt/'
+path = './'
+#path = '/opt/svt/'
  
 
 node_state={
@@ -117,8 +117,8 @@ def getPerformanceAverage(data):
                     perf['write_throughput'] += y['writes']
                     i += 1
                 if i > 0:
-                    perf['read_throughput'] /= i 
-                    perf['write_throughput'] /= i
+                    perf['read_throughput'] /= (i * BtoMB)
+                    perf['write_throughput'] /= (i * BtoMB)
                 else:
                     perf['read_throughput'] = -1
                     perf['write_throghput'] = -1 
@@ -129,8 +129,8 @@ def getPerformanceAverage(data):
                     perf['write_latency'] += y['writes']
                     i += 1
                 if i > 0:
-                    perf['read_latency'] /= i 
-                    perf['write_latency'] /= i
+                    perf['read_latency'] /= (i * 1000) 
+                    perf['write_latency'] /= (i * 1000)
                 else:
                     perf['read_latency'] = -1 
                     perf['write_latency'] = -1                
