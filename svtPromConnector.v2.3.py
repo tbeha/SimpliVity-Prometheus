@@ -27,8 +27,8 @@ from prometheus_client import Counter, Gauge, start_http_server
 
 BtoGB=pow(1024,3)
 BtoMB=pow(1024,2)
-path = './'
-#path = '/opt/svt/'
+#path = './'
+path = '/opt/svt/data'
  
 
 node_state={
@@ -257,10 +257,12 @@ if __name__ == "__main__":
             """  VM metrics: """
             for x in vms:
                 cn = (x['name'].split('.')[0]).replace('-','_')
-                svm.labels(cn,'state').set(vm_state[x['state']])                            
+                svm.labels(cn,'state').set(vm_state[x['state']]) 
+                """                           
                 perf=getPerformanceAverage(svt.GetVMMetric(x['name'],timerange=mrange,resolution=mresolution)['metrics'])
                 for metricname in performancemetric:
-                    svm.labels(cn,metricname).set(perf[metricname])                            
+                    svm.labels(cn,metricname).set(perf[metricname])                           
+                """
 
             """ DataStore metrics """
             for x in datastores:
