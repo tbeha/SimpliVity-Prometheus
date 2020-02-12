@@ -2,7 +2,7 @@
 """
 Python Class Library for the HPE SimpliVity Rest API v 3.0
 
-Copyright (c) 2019 Thomas Beha, November 18. 2019
+Copyright (c) 2019 Thomas Beha, November 18. 2019 
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
