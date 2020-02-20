@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # -*- coding: utf-8 -*-
 """
 Python Class Library for the HPE SimpliVity Rest API v 3.0
