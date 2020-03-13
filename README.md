@@ -14,7 +14,7 @@ The whitepaper that can be found in the documentation folder refers to svtPromCo
 
 The difference between v2.3 and v3.0 is that v3.0 uses system variables for the path, keyfile and the xml-file while v2.3 had the name and the path fixed in the Python script. Hence, the script startcommando for v3.0 changed to:
 
-  python svtPromConnector.v3.0.py -p <path> -k <keyfilename> -x <xmlfilename>
+  python svtPromConnector.v3.0.py -p Path -k Keyfilename -x XMLfilename
 
 This change was done to be more flexible on deploying the SimpliVityConnector-Prometheus-Grafana monitoring for instance on Kubernetes. The corresponding whitepaper for deploying this environment on Kubernetes cluster is currently work in progress. 
 
