@@ -2,29 +2,29 @@
 # docker build -t svtconnect -f svtconnect.Dockerfile . 
 # docker run -i -p 9091:9091 --name svtconnect svtconnect
 # Use my centospython as the base Image
-FROM  centos
+FROM ubuntu
+#
 LABEL maintainer="Thomas Beha"
-LABEL version="2.0"
-LABEL copyright="Thomas Beha, 2019"
+LABEL version="3.0"
+LABEL copyright="Thomas Beha, 2020"
 LABEL license="GNU General Public License v3"
-LABEL DESCRIPTION="SimpliVity - Prometheus Connector"
-# Install Python 3.6
-RUN yum install -y https://centos7.iuscommunity.org/ius-release.rpm
-RUN yum update -y
-RUN yum install -y python36u python36u-libs python36u-devel python36u-pip
-RUN /usr/bin/pip3.6 install --upgrade pip
-# Install the necessary Python packages:
-RUN /usr/bin/pip3.6 install datetime && \
-    /usr/bin/pip3.6 install requests && \
-	/usr/bin/pip3.6 install cryptography && \
-	/usr/bin/pip3.6 install fernet && \
-	/usr/bin/pip3.6 install lxml && \
-	/usr/bin/pip3.6 install prometheus_client
+LABEL DESCRIPTION="CTC SimpliVity Pythone container based on Ubuntu"
+#
+RUN apt-get update
+RUN apt-get -y install python3.6 && \
+	apt-get -y install python3-pip && \
+	apt-get -y install vim && \
+	apt-get -y install cron 
+RUN /usr/bin/pip3 install requests && \
+	/usr/bin/pip3 install fernet && \
+	/usr/bin/pip3 install cryptography && \
+	/usr/bin/pip3 install lxml && \
+	/usr/bin/pip3 install prometheus_client
 # copy the necessary python files to the container
 RUN mkdir /opt/svt
 COPY SimpliVityClass.py /opt/svt
-COPY svtconnector.py /opt/svt
-COPY SvtConnector.key /opt/svt
-COPY SvtConnector.xml /opt/svt
+COPY svtPromConnector.v2.3.py /opt/svt
+COPY svtconnector.key /opt/svt/SvtConnector.key
+COPY svtconnector.xml /opt/svt/SvtConnector.xml
 # Start the collector
-CMD /usr/bin/python3.6 /opt/svt/svtconnector.py
+CMD /usr/bin/python3.8 /opt/svt/svtPromConnector.v2.3.py

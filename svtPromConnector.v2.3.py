@@ -28,7 +28,7 @@ from prometheus_client import Counter, Gauge, start_http_server
 BtoGB=pow(1024,3)
 BtoMB=pow(1024,2)
 #path = './'
-path = '/opt/svt/data'
+path = '/opt/svt/'
  
 
 node_state={
