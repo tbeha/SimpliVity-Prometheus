@@ -27,4 +27,4 @@ COPY svtPromConnector.v2.3.py /opt/svt
 COPY svtconnector.key /opt/svt/SvtConnector.key
 COPY svtconnector.xml /opt/svt/SvtConnector.xml
 # Start the collector
-CMD /usr/bin/python3.8 /opt/svt/svtPromConnector.v2.3.py
+CMD /usr/bin/python3 /opt/svt/svtPromConnector.v2.3.py
