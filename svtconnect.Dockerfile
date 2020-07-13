@@ -11,7 +11,7 @@ LABEL license="GNU General Public License v3"
 LABEL DESCRIPTION="CTC SimpliVity Pythone container based on Ubuntu"
 #
 RUN apt-get update
-RUN apt-get -y install python3.6 && \
+RUN apt-get -y install python3.8 && \
 	apt-get -y install python3-pip && \
 	apt-get -y install vim && \
 	apt-get -y install cron 
