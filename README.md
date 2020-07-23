@@ -9,15 +9,17 @@ Support for any of the available SimpliVity Prometheus versions on this Github i
 
 The following versions/branches are available:
 
-  v2.3 / master:       
+  <b>v2.3 / master:</b>       
     Implementation as described in the solution depot whitepaper with fixed path and filenames for key- and xml-configurationfile. 
-  v3.0:                
+    
+  <b>v3.0:</b>                
     allows the use of system variabls for the path, key- and xml-configuration-file. Hence, the script startcommando for v3.0 changed to:
       python svtPromConnector.v3.0.py -p Path -k Keyfilename -x XMLfilename
-  v4.0:
+  
+  <b>v4.0:</b>
     uses SimpliVity class v4.0. Provides additional flexiblity by selecting what performance needs to be monitored: federation, cluster, node, vm.
 
-  Kubernetes:
+  <b>Kubernetes:</b>
     Can be used to deploy the SimpliVity Prometheus connector as a Kubernetes POD, using a configmap to provide the necessary connector input data. 
     Use the CreateConfigMap.py script instead of the createCredentials.py script to create the configmap. Please take a look at the SvtPromDeployment.ipynb Jupyter notebook if you want to have details of the Kubernetes implementation.  
 
