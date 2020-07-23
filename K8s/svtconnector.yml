@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: svtconnector
+  namespace: svtprometheus
+  labels:
+    app: svtconnector
+spec:
+  selector:
+    matchLabels:
+      app: svtconnector
+  template:
+    metadata:
+      labels:
+        app: svtconnector
+    spec:
+      containers:
+        - name: svtconnector
+          image: tb1378/svtconk8s
+          command: ["/usr/bin/python3"]
+          args: ["/opt/svt/svtpromconnector.py"]
+          volumeMounts:
+            - name: svtconnectorxml
+              mountPath: /opt/svt/data
+      volumes:
+        - name: svtconnectorxml
+          configMap:
+            name: svtdemo-xml   # the correct name of the configmap needs to be added here. 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: svtconnector-service
+  namespace: svtprometheus
+spec:
+  selector:
+    app: svtconnector
+  ports:
+    - port: 9091               # The Port of that the SimpliVity connector uses
+      targetPort: 9091
+      protocol: TCP

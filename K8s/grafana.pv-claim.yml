@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: grafana-db-volume
+  namespace: svtprometheus
+spec:
+  persistentVolumeReclaimPolicy: Retain # Recycle, Delete
+  volumeMode: Filesystem
+  storageClassName: "nfs"
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:                        
+    server: 10.1.41.12        
+    path: /k8s/pvc/grafana
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-pv-claim
+  namespace: svtprometheus
+spec:
+  storageClassName: "nfs"
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi

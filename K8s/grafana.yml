@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-service
+  namespace: svtprometheus
+spec:
+  selector:
+    app: grafana
+    tier: frontend
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+  type: LoadBalancer
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: svtprometheus
+spec:
+  selector:
+    matchLabels:
+      app: grafana
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: grafana
+        tier: frontend
+    spec:     
+      containers:
+        - name: grafana
+          image: grafana/grafana
+          ports:
+            - containerPort: 3000
+              name: grafana-port
+              
+          volumeMounts:
+            - name: grafana-persistent-storage
+              mountPath: "/var/lib/grafana"
+          env:  
+            - name: GF_SMTP_ENABLED
+              value: "yes"
+            - name: GF_SMTP_HOST
+              value: "smtp.hpe.com:25"
+            - name: GF_SMTP_FROM_NAME
+              value: "Beha, Thomas"
+            - name: GF_SMTP_FROM_ADDRESS
+              value: "thomas.beha@hpe.com"
+            - name: GF_SMTP_SKIP_VERIFY
+              value: "true"
+            - name: GF_SERVER_HTTP_PORT
+              value: "3000"
+            - name: GF_INSTALL_PLUGINS
+              value: "grafana-kubernetes-app"
+#           - name: GF_INSTALL_PLUGINS
+#             value: "ryantxu-ajax-panel"
+#           - name: GF_PANELS_DISABLE_SANITIZE_HTML
+#             value: "true"
+#          - name: GF_AUTH_DISABLE_LOGIN_FORM
+#            value: "true"
+#          - name: GF_AUTH_ANONYMOUS_ENABLED
+#            value: 'true'
+      volumes:
+        - name: grafana-persistent-storage
+          persistentVolumeClaim:
+            claimName: grafana-pv-claim  
