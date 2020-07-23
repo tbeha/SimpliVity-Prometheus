@@ -9,14 +9,14 @@ Support for any of the available SimpliVity Prometheus versions on this Github i
 
 The following versions/branches are available:
 
-  <b>v2.3 / master:</b>       
+  <b>v2.3:</b>       
     Implementation as described in the solution depot whitepaper with fixed path and filenames for key- and xml-configurationfile. 
     
   <b>v3.0:</b>                
     allows the use of system variabls for the path, key- and xml-configuration-file. Hence, the script startcommando for v3.0 changed to:
       python svtPromConnector.v3.0.py -p Path -k Keyfilename -x XMLfilename
   
-  <b>v4.0:</b>
+  <b>master:</b>
     uses SimpliVity class v4.0. Provides additional flexiblity by selecting what performance needs to be monitored: federation, cluster, node, vm.
 
   <b>Kubernetes:</b>
