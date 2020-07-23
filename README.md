@@ -19,9 +19,10 @@ The following versions/branches are available:
   <b>master:</b>
     uses SimpliVity class v4.0. Provides additional flexiblity by selecting what performance needs to be monitored: federation, cluster, node, vm.
 
-  <b>Kubernetes:</b>
-    Can be used to deploy the SimpliVity Prometheus connector as a Kubernetes POD, using a configmap to provide the necessary connector input data. 
-    Use the CreateConfigMap.py script instead of the createCredentials.py script to create the configmap. Please take a look at the SvtPromDeployment.ipynb Jupyter notebook if you want to have details of the Kubernetes implementation.  
+
+
+ The <b>k8s</b>-directory contains the details to deploy the SimpliVity Prometheus connector as a Kubernetes POD, using a configmap to provide the necessary connector input data. Use the CreateConfigMap.py script instead of the createCredentials.py script to create the configmap. Please take a look at the <b>SvtPromDeployment.ipynb</b> Jupyter notebook if you want to have details of the Kubernetes implementation.  
+
 
 The createCredentials script will ask for the following information:
 
