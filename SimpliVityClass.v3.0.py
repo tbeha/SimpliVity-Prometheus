@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Python Class Library for the HPE SimpliVity Rest API v 4.0.0
+Python Class Library for the HPE SimpliVity Rest API v 3.0
 
-Copyright (c) 2019 Thomas Beha, June 2020
+Copyright (c) 2019 Thomas Beha, November 18. 2019 
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@ Copyright (c) 2019 Thomas Beha, June 2020
 Requirements:
     requests
     datetime
+
 
 RestAPI Response codes:
     200     OK
@@ -36,14 +37,9 @@ RestAPI Response codes:
     504     Gateway timeout
     551     No backup found 
 
-v4.0.0 of the SimpliVity Class includes the complete parameter list of each
+v3.0 of the SimpliVity Class includes the complete parameter list of each
 possible RestAPI call. The parameters must be provided as an array of key-value pairs, 
 where the key is the parameter name.
-
-This SimpliVity Class is tested against the RestAPI of OmniStack 4.0.0 and 4.0.1
-
-The calls will work with the default limit of 500. If you do have more than 500 entries, then you need to handle
-this in your code by either raising the limit (optional parameter) or recursive calls with offset. 
 
 """
 
@@ -74,7 +70,7 @@ class SimpliVity:
     def doPost(self, url, body=None):
         if body:
             headers = self.headers
-            headers['Content-Type'] = self.jsonversion
+            headers['Content-Type'] = "application/vnd.simplivity.v1.9+json"
             response = requests.post(url,data=body, verify=False, headers=headers)
         else:
             response = requests.post(url, verify=False, headers=self.headers)
@@ -117,36 +113,24 @@ class SimpliVity:
             return self.doGet(self.url+'certificates')
 
     def PostCertificate(self, certificate):
+        print("PostCertificate is not yet implemented")
         body = '{"certificate":"'+certificate+'"}'
-        return self.doPost(self.url+'certificates', body)   
+        return self.doPost(self.url+'certificates', body)
 
     def DeleteCertificate(self, certid):
         return self.doDelete(self.url+'certificates/'+certid)
     
     """ Host Operations ########################################################################"""
     
-    def GetHost(self, parameters = None ):
-        """  Parameters:
-            show_optional_fields
-            id
-            name
-            type
-            model
-            version
-            ...
-        """
-        url = self.url+'hosts'
-        if parameters:
-            url = url+'?'
-            i = 0
-            for x in parameters:
-                if i > 0: url = url + '&' 
-                url = url+x+'='+parameters[x]
-                i += 1  
+    def GetHost(self, name = None ):
+        if name: 
+            url = self.url+'hosts?show_optional_fields=true&name='+name
+        else:
+            url = self.url+'hosts'
         return self.doGet(url)
 
     def GetHostId(self, name):
-        for x in self.GetHost({'name':name})['hosts']:
+        for x in self.GetHost(name)['hosts']:
             if x['state'] == 'ALIVE':
                 return x['id']
         return x['id']
@@ -172,36 +156,17 @@ class SimpliVity:
     def GetOVCShutdownStatus(self, host_id):
         return self.doGet(self.url+'hosts/'+host_id+'/virtual_controller_shutdown_status')
 
-    def RemoveHostFromFederation(self,host_id, force=False ):
-        body='{"force":"'+force+'"}'
-        return self.doPost(self.url+'hosts/'+host_id+'/remove_from_federation',body)
-
     """ VM Operations #######################################################################"""
     
-    def GetVM(self,parameters = None):
-        """  Parameters:
-            show_optional_fields
-            id
-            name
-            type
-            model
-            version
-            limit
-            offset
-            ...
-        """
-        url = self.url+'virtual_machines'
-        if parameters:
-            url = url+'?'
-            i = 0
-            for x in parameters:
-                if i > 0: url = url + '&' 
-                url = url+x+'='+parameters[x]
-                i += 1
+    def GetVM(self, vmname = None):
+        if vmname: 
+            url = self.url+'virtual_machines?show_optional_fields=true&name='+vmname
+        else:
+            url = self.url+'virtual_machines?show_optional_field=true'
         return self.doGet(url)
 
     def GetVMId(self, vmname):
-        x = self.GetVM({"name":vmname})['virtual_machines']
+        x = self.GetVM(vmname)['virtual_machines']
         for z in x: 
             if z['state'] == 'ALIVE':
                 return z['id']                  
@@ -232,41 +197,17 @@ class SimpliVity:
                  "guest_password":"'+ password +'"}'
         return self.doPost(self.url+'virtual_machines/'+self.GetVMId(name)+'/validate_backup_credentials', body)
 
-    def VMpowerOff(self, name):
-        return self.doPost(self.url+'virtual_machines/'+self.GetVMId(name)+'/power_off')
-
-    def VMpowerOn(self, name):
-        return self.doPost(self.url+'virtual_machines/'+self.GetVMId(name)+'/power_on')
-
-    def VMpolicyImpactReport(self, vm_id, policy_id):
-        body = '{"virtual_machine_id":"'+ vm_id +'",\
-                 "policy_id":"'+ policy_id +'"}'
-        return self.doPost(self.url+'virtual_machines/policy_impact_report/apply_policy', body)
-
     """ DataStore Operations ################################################################"""
     
-    def GetDataStore(self, parameters = None):         
-        """  Parameters:
-            show_optional_fields
-            id
-            name
-            type
-            model
-            version
-            ...
-        """
-        url = self.url+'datastores'
-        if parameters:
-            url = url+'?'
-            i = 0
-            for x in parameters:
-                if i > 0: url = url + '&' 
-                url = url+x+'='+parameters[x]
-                i += 1 
+    def GetDataStore(self, name=None):         
+        if name: 
+            url = self.url+'datastores?show_optional_fields=true&name='+name
+        else:
+            url = self.url+'datastores?show_optional_field=true'
         return self.doGet(url)
 
     def GetDataStoreId(self, name):
-        return self.GetDataStore({"name":name})['datastores'][0]['id']
+        return self.GetDataStore(name)['datastores'][0]['id']
 
     def NewDataStore(self, name, cluster, policy, size):
         size = size * 1024 * 1024 * 1024        
@@ -287,92 +228,31 @@ class SimpliVity:
         body = '{"policy_id":"'+ self.GetPolicyId(policy) +'"}'
         return self.doPost(self.url+'datastores/'+self.GetDataStoreId(name)+'/set_policy', body)        
     
-    def ShareDataStore(self, name, host):
-        body = '{"hostname":"'+ host + '"}'
-        return self.doPost(self.url+'datastores/'+self.GetDataStoreId(name)+'/share', body)
-
-    def UnShareDataStore(self, name, host):
-        body = '{"hostname":"'+ host + '"}'
-        return self.doPost(self.url+'datastores/'+self.GetDataStoreId(name)+'/unshare', body)
-
-    def GetStandardHosts(self, name):
-        return self.doPost(self.url+'datastores/'+self.GetDataStoreId(name)+'/standard_hosts')
-
     """ Cluster Operations ###################################################################"""
     
-    def GetCluster(self, parameters=None):
-        """  Parameters:
-            show_optional_fields
-            id
-            name
-            type
-            model
-            version
-            ...
-        """
-        url = self.url+'omnistack_clusters'
-        if parameters:
-            url = url+'?'
-            i = 0
-            for x in parameters:
-                if i > 0: url = url + '&' 
-                url = url+x+'='+parameters[x]
-                i += 1
-        return self.doGet(url)       
+    def GetCluster(self, name=None):
+        if name: 
+            url = self.url+'omnistack_clusters?show_optional_fields=true&name='+name
+        else:
+            url = self.url+'omnistack_clusters?show_optional_fields=true'
+        return self.doGet(url)        
        
     def GetClusterId(self, name):
-        return self.GetCluster({"name":name})['omnistack_clusters'][0]['id']
+        return self.GetCluster(name)['omnistack_clusters'][0]['id']
 
     def GetClusterMetric(self, name,timerange='43200', resolution='Minute', timeOffset='0'):       
         url = self.url +'omnistack_clusters/'+self.GetClusterId(name)+'/metrics?range='+timerange+'&resolution='+resolution+'&offset='+timeOffset+'&show_optional_fields=true'
         return self.doGet(url) 
         
-    def GetClusterThroughput(self, name=None):
-        url =  self.url+'omnistack_clusters/throughput'
-        if name:
-            url = url + '?cluster_group_id='+self.GetClusterId(name)       
-        return self.doGet(url)
+    def GetClusterThroughput(self):        
+        return self.doGet(self.url+'omnistack_clusters/throughput')
     
-    def GetClusterTimeZones(self):
-        return self.doGet(self.url+'omnistack_clusters/time_zone_list')
-
     def SetClusterTimeZone(self, name, timezone):      
         body = '{"time_zone":"'+ timezone +'"}'
         return self.doPost(self.url+'omnistack_clusters/set_time_zone', body)
 
-    def GetConnectedClusters(self, name):
-        return self.doGet(self.url +'omnistack_clusters/'+self.GetClusterId(name)+'/connected_clusters')
-
-    def GetClusterPairThroughput(self, cluster1, parameters=None):
-        """ Parameters:  
-               destination_id
-               time_offset
-               range 
-        """
-        url = self.url +'omnistack_clusters/'+self.GetClusterId(cluster1)+'/throughput'
-        if parameters:
-            url = url+'?'
-            i = 0
-            for x in parameters:
-                if i > 0: url = url + '&' 
-                url = url+x+'='+parameters[x]
-                i += 1
-        return self.DoGet(url)
-
-    def GetClusterGroup(self, parameters=None):
-        """
-        Parameters:
-           id, name, fields, limit, offset, case, sort, order
-        """
-        url = self.url + 'cluster_groups'
-        if parameters:
-            url = url+'?'
-            i = 0
-            for x in parameters:
-                if i > 0: url = url + '&' 
-                url = url+x+'='+parameters[x]
-                i += 1
-        return self.doGet(url)
+    def GetClusterGroup(self):
+        return self.doGet(self.url+'cluster_groups')
 
     def RenameClusterGroup(self, name, clustergroup_id):      
         body = '{"cluster_group_name":"'+ name +'"}'
@@ -380,24 +260,21 @@ class SimpliVity:
     
     """ Backup & Restore #####################################################################"""
         
-    def GetBackups(self, parameters=None):
-        """
-        Parameters:
-           id, name, fields, limit, offset, case, sort, order
-           createdAfter = (datetime.datetime.now() - datetime.timedelta(hours=past_hours)).isoformat(timespec='seconds')+'Z'
-        """
-        url = self.url + 'backups'
-        if parameters:
-            url = url+'?'
-            i = 0
-            for x in parameters:
-                if i > 0: url = url + '&' 
-                url = url+x+'='+parameters[x]
-                i += 1        
+    def GetBackups(self, past_hours=None, vmname=None, listOffset=None, listLimit=None):
+        url=self.url+'backups?show_optional_fields=true'
+        if past_hours:
+            createdAfter = (datetime.datetime.now() - datetime.timedelta(hours=past_hours)).isoformat(timespec='seconds')+'Z'
+            url = url + '&created_after='+createdAfter
+        if vmname:
+            url = url + '&virtual_machine_name='+vmname
+        if listOffset:
+            url = url + '&offset='+listOffset
+        if listLimit:
+            url = url + '&limit='+listLimit
         return self.doGet(url) 
         
     def GetVMLastBackup(self, vmname):
-        bck = self.GetBackups({"virtual_machine_name":vmname})['backups']
+        bck = self.GetBackups(vmname=vmname)['backups']
         if(len(bck)>0):
             return (sorted(bck, key=lambda bck:bck['created_at'],reverse=True))[0]
         else:
@@ -412,15 +289,7 @@ class SimpliVity:
                 "consistency_type":"'+ consistencyType +'",\
                 "retention":'+ retention +'}'
         return self.doPost(self.url+'virtual_machines/'+self.GetVMId(name)+'/backup', body) 
-
-    def VMbackup_parameter(self, name, username, password, override, app_aware):
-        body = '{"guest_username":"'+ username +'",\
-                 "guest_password":"'+ password +'",\
-                 "override_guest_validation":"'+ override +'",\
-                 "app_aware_type":"'+ app_aware +'"}'
-        return self.doPost(self.url+'virtual_machines/'+self.GetVMId(name)+'/backup_parameters', body)
-
-
+        
     def RestoreVM(self, vmname, destination, bckid, restore=False):       
         if restore:
             url = self.url+'backups/'+bckid+'/restore?restore_original=true'
@@ -428,7 +297,7 @@ class SimpliVity:
         else:        
             body='{\
                     "virtual_machine_name":"'+ vmname +'",\
-                    "dastastore_id":"'+ self.GetDataStoreId(destination)+'"}'
+                    "dastastore_id":"'+ self.GetDataStoreId(destination)+'}'
             return self.doPost(self.url+'backups/'+bckid+'/restore?restore_original=false', body)
        
     def GetBackupId(self, vmname, bckname):
@@ -439,53 +308,17 @@ class SimpliVity:
                 "backup_id":["'+ bckid +'"]}'
         return self.doPost(self.url+'backups/delete', body)
 
-    def SetBackupRetention(self, bckid, retention, force=False):
-        body='{\
-                "backup_id":["'+ bckid +'"],\
-                "retention":"'+ retention +',\
-                "force":"'+ force + '}'
-        return self.doPost(self.url+'backups/set_retention', body)
-
-    def CalculateUniqueSize(self, bckid):
-        return self.doPost(self.url+'backups/'+bckid+'/calculate_unique_size')
-
-    def CancelBackup(self, bckid):
-        return self.doPost(self.url+'backups/'+bckid+'/cancel')
-
-    def CopyBackup(self, bckid, destination, storeName):
-        body='{\
-            "destination_id":"'+ destination +'",\
-            "external_store_name":"'+ storeName +'"}'
-        return self.doPost(self.url+'backups/'+bckid+'/copy', body)
-    
-    def LockBackup(self, bckid):
-        return self.doPost(self.url+'backups/'+bckid+'/lock')
-
-    def RenameBackup(self, bckid, backup_name):
-        body='{\
-            "backup_name":"'+ backup_name + '"}'
-        return self.doPost(self.url+'backups/'+bckid+'/rename', body)
-
     """ Policy Operations ####################################################################"""
     
-    def GetPolicy(self, parameters=None):
-        """
-        Parameters:
-           id, name, cluster_group_id, fields, limit, offset, case, sort, order
-           
-        """
-        url = self.url + 'policies'
-        if parameters:
-            url = url+'?'
-            i = 0
-            for x in parameters:
-                if i > 0: url = url + '&' 
-                url = url+x+'='+parameters[x]
-                i += 1        
-        return self.doGet(url)         
+    def GetPolicy(self, policyname=None):
+        if policyname: 
+            url = self.url+'policies?show_optional_fields=true&name='+policyname
+        else:
+            url = self.url+'policies?show_optional_field=true'
+        return self.doGet(url)
         
     def GetPolicyId(self, policyname):
-        return( self.GetPolicy({'"name":"'+policyname+'"'})['policies'][0]['id'] )
+        return( self.GetPolicy(policyname)['policies'][0]['id'] )
         
         
     def DefinePolicy(self, policyname):       
@@ -513,41 +346,8 @@ class SimpliVity:
     def DeletePolicyRule(self, policy_id, rule_id):       
         return self.doDelete(self.url+'policies/'+policy_id+'/rules/'+rule_id)
 
-    """ External Storage - air-gapped Backup Operations ############################################################################"""
-
-    def GetExternalStore(self, parameters=None):
-        """
-        Parameters:
-           name, omnistack_cluster_id, management_ip, cluster_group_id, fields, limit, offset, case, sort, order
-           
-        """
-        url = self.url + 'external_stores'
-        if parameters:
-            url = url+'?'
-            i = 0
-            for x in parameters:
-                if i > 0: url = url + '&' 
-                url = url+x+'='+parameters[x]
-                i += 1        
-        return self.doGet(url)         
-
-    def RegisterExternalStore(self, parameters):
-        """
-          Parameters (Dictionary):
-          management_ip: IP address of the external store
-          management_port: Default 9387 
-          name: name of the external Catalyst store
-          omnistack_cluster_id: UUID of the cluster associated with the store 
-          username: client name of the external store
-          passward: client password
-          storage_port: Default 9388
-        """
-        return self.doPost(self.url+'external_stores', parameters)
-
-
 class SvtError(Exception):
     """ Base class for SimpliVityClass Errors """
     def __init__(self, expression, status, message):
         self.expression = expression
         self.message = message
-        self.status = status
