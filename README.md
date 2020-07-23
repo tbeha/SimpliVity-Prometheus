@@ -1,22 +1,42 @@
 # Prometheus connector for HPE Simplivity
 
-Please take a look at the documentation to get the details of the Prometheus connector implementation. 
+Any SimpliVity Prometheus connector presented on this Github is not supported by HPE. If you want to have the HPE supported SimpliVity Prometheus connector, then please download the SimpliVity Prometheus connector from the HPE Github:
+https://github.com/HewlettPackard/simplivity-prometheus-connector
 
-The general steps to take are:
+The HPE SimpliVity Prometheus connector is based on v2.3 of the SimpliVity connector available on this Github. The SimpliVity Prometheus connector v2.3 is kept on this Github, because, there is a HPE Solution Depot paper (see documentation folder) that refers to this version and the Github here. 
 
-1. run the createCredentials.py script to generate the credentials information for the Prometheus connector. 
-2. Adjust the path variable in the svtPromConnector.v2.3.py script to the correct value where your credentials information (.xml files created in step 1) is located.
-3. Run the Prometheus connector script. 
+Support for any of the available SimpliVity Prometheus versions on this Github is provided on a best effort approach.
 
+The following versions/branches are available:
 
-# Attention:
-The whitepaper that can be found in the documentation folder refers to svtPromConnector.v2.3.py.
+  v2.3 / master:       
+    Implementation as described in the solution depot whitepaper with fixed path and filenames for key- and xml-configurationfile. 
+  v3.0:                
+    allows the use of system variabls for the path, key- and xml-configuration-file. Hence, the script startcommando for v3.0 changed to:
+      python svtPromConnector.v3.0.py -p Path -k Keyfilename -x XMLfilename
+  v4.0:
+    uses SimpliVity class v4.0. Provides additional flexiblity by selecting what performance needs to be monitored: federation, cluster, node, vm.
 
-The difference between v2.3 and v3.0 is that v3.0 uses system variables for the path, keyfile and the xml-file while v2.3 had the name and the path fixed in the Python script. Hence, the script startcommando for v3.0 changed to:
+  Kubernetes:
+    Can be used to deploy the SimpliVity Prometheus connector as a Kubernetes POD, using a configmap to provide the necessary connector input data. 
+    Use the CreateConfigMap.py script instead of the createCredentials.py script to create the configmap. Please take a look at the SvtPromDeployment.ipynb Jupyter notebook if you want to have details of the Kubernetes implementation.  
 
-  python svtPromConnector.v3.0.py -p Path -k Keyfilename -x XMLfilename
+The createCredentials script will ask for the following information:
 
-This change was done to be more flexible on deploying the SimpliVityConnector-Prometheus-Grafana monitoring for instance on Kubernetes. The corresponding whitepaper for deploying this environment on Kubernetes cluster is currently work in progress. 
+  - username               vCenter username (a user with readonly access rights is sufficient)
+  - password               vCenter password
+  - OVC/MVA IP address     IP address that the connector uses to connect to the federation
+  - name                   name of the yml-file (<name>.yml) and the configmap: <name>-xml that will be created
+  - port                   TCP Port that the connector uses to publish the counters.  
+  - timerange              A range in seconds (the duration from the specified point in time)
+  - resolution             The resolution (SECOND, MINUTE, HOUR, or DAY)
+  - monitoringinterval     connector cyle time (should be >= the time to process the captured data)
+
+additional parameter with v4.0:
+  - monitor                performance data capture selector: f(ederation), c(luster), n(ode), v(irtual machine)
+  - cluster                enter a clustername if you want to limit the data capture to a single cluster
+  - limit                  A positive integer that represents the maximum number of results to return
+  - offset                 A positive integer that directs the service to start returning the <offset value> instance, up to the limit. Every result will be collected if the offset is set to a negative value.
 
 
 
