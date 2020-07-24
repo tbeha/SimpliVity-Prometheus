@@ -30,7 +30,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: svtconnector-service
+  name: svtconnector
   namespace: svtprometheus
 spec:
   selector:
