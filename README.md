@@ -11,6 +11,7 @@ The following versions/branches are available:
 
   <b>v2.3:</b>       
     Implementation as described in the solution depot whitepaper with fixed path and filenames for key- and xml-configurationfile. 
+    <b>Attention!</b> The startup command for the connector was changed with the latest Dockerfile to /usr/bin/python3 /opt/svt/svtconnector.py. This was neccessary, since Python 3.8 instead of Python 3.6 is now automatically installed (even if the dockerfile states to install python3.6). 
     
   <b>v3.0:</b>                
     allows the use of system variabls for the path, key- and xml-configuration-file. Hence, the script startcommando for v3.0 changed to:
