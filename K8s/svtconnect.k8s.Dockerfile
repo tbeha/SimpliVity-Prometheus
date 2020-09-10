@@ -1,6 +1,7 @@
 
-# docker build -t tb1378\svtconnect:k8s -f svtconnect.k8s.Dockerfile . 
-# docker run -i -p 9091:9091 --name svtconnect svtconnect
+# docker build -t tb1378\svtconk8s -f svtconnect.k8s.Dockerfile . 
+# docker login
+# docker push tb1378\svtconk8s
 # User Ubuntu as the base Image
 FROM ubuntu
 #
@@ -23,7 +24,7 @@ RUN /usr/bin/pip3 install requests && \
 # copy the necessary python files to the container
 RUN mkdir /opt/svt
 COPY SimpliVityClass.py /opt/svt
-COPY svtPromConnector.v4.1.py /opt/svt/svtpromconnector.py
+COPY svtPromConnector.v4.2.py /opt/svt/svtpromconnector.py
 #COPY SvtConnector.key /opt/svt/data/svtconnector.key  # will be transferred to the container as K8s configmap
 #COPY SvtConnector.xml /opt/svt/data/svtconnector.xml  # will be transferred to the container as K8s configmap
 # Start the collector
