@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on September 9, 2020
-Version 4.2
+Version 4.2 
 Used for a Kubernetes deployment with configmaps instead of runtime arguments.
 
 Copyright (c) 2020 Thomas Beha
