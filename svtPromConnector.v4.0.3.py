@@ -218,7 +218,7 @@ if __name__ == "__main__":
     monitor=(tree.find("monitor")).text
     cluster=(tree.find("cluster")).text
     limit=(tree.find("limit")).text
-    offset=(tree.find("offset")).text
+    xoffset=(tree.find("offset")).text
 
     """ Open the logfile """ 
     log=logopen(path+lfile)
@@ -268,7 +268,7 @@ if __name__ == "__main__":
             t0 = time.time()         
             c.inc()
 
-            if int(offset) < 0:
+            if int(xoffset) < 0:
                 lim = int(limit)
                 if ('f' in monitor) or ('c' in monitor): 
                     """ Get Cluster """
