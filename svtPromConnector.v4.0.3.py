@@ -255,7 +255,7 @@ if __name__ == "__main__":
     ivm = Info('vm','Additional VM Info',['vm'])
     inode = Info('node','Additional Node Info',['node'])
 
-    icon.info({'Monitor':monitor,'key':keyfile,'xml':xmlfile,'limit':limit,'oxl':offset})
+    icon.info({'Monitor':monitor,'key':keyfile,'xml':xmlfile,'limit':limit,'oxl':xoffset})
     id_node={}
     replica={}
     """
